@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package myvault;
+
+message MyVault {
+  string version = 1;
+
+  bytes salt = 2;
+
+  bytes encrypted = 3;
+}
+
+message Password {
+  string name = 1;
+
+  string password = 2;
+}
+
+message PlainVault {
+  bytes check = 1;
+
+  repeated Password password = 2;
+}
