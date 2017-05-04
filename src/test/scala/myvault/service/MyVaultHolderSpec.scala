@@ -11,7 +11,7 @@ class MyVaultHolderSpec extends FlatSpec with GeneratorDrivenPropertyChecks {
 
       passwords.foreach(password => svc.add(password))
 
-      assert(svc.vault.password === passwords)
+      assert(svc.vault.password.map(_.downscaled) === passwords.map(_.downscaled))
     }
   }
 
@@ -36,6 +36,18 @@ class MyVaultHolderSpec extends FlatSpec with GeneratorDrivenPropertyChecks {
       assertThrows[Exception] {
         new MyVaultHolder(key = key.copy(key = key.key + "!"), init = Some(svc1.toByteArray))
       }
+    }
+  }
+
+  it should "delete passwords" in {
+    forAll { (passwords: Seq[Password], key: VaultKey) =>
+      val svc = new MyVaultHolder(key = key, init = None)
+
+      passwords.foreach(password => svc.add(password))
+
+      svc.vault.password.foreach(password => svc.del(password.passwordId))
+
+      assert(svc.vault.password === Nil)
     }
   }
 }

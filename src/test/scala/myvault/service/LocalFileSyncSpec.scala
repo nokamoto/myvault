@@ -1,24 +1,14 @@
 package myvault.service
 
-import java.nio.file.{Files, Path}
+import java.nio.file.Path
 
 import myvault.Password
-import org.scalatest.{Assertion, FlatSpec}
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import myvault.service.LocalFileSyncSpec._
 import myvault.service.MyVaultService.MyVaultInitializationException
+import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatest.{Assertion, FlatSpec}
 
 class LocalFileSyncSpec extends FlatSpec with GeneratorDrivenPropertyChecks {
-  it should "add passwords" in {
-    forAll { (passwords: Seq[Password], key: VaultKey) =>
-      service(key) { (svc, _) =>
-        passwords.foreach(password => svc.add(password))
-
-        assert(svc.vault.password === passwords)
-      }
-    }
-  }
-
   it should "sync my vault" in {
     forAll { (passwords: Seq[Password], key: VaultKey) =>
       service(key) { (svc1, dir) =>
@@ -31,14 +21,22 @@ class LocalFileSyncSpec extends FlatSpec with GeneratorDrivenPropertyChecks {
         assert(svc1.vault === svc2.vault)
 
         assertThrows[MyVaultInitializationException](service(key.copy(key = key.key + "!"), dir))
+
+        svc2.vault.password.foreach(password => svc2.del(password.passwordId))
+
+        assert(svc2.vault.password === Nil)
+
+        svc2.sync()
+
+        val svc3 = service(key, dir)
+
+        assert(svc2.vault === svc3.vault)
       }
     }
   }
 }
 
-object LocalFileSyncSpec {
-  def temp(): Path = Files.createTempDirectory("LocalFileSyncSpec")
-
+object LocalFileSyncSpec extends TempLocalFile {
   def service(key: VaultKey, d: Path): MyVaultService = {
     val svc = new MyVaultService(key = key) with LocalFileSync {
       override protected[this] def dir: String = d.toAbsolutePath.toString
@@ -47,11 +45,6 @@ object LocalFileSyncSpec {
   }
 
   def service(key: VaultKey)(f: (MyVaultService, Path) => Assertion): Assertion = {
-    val t = temp()
-    try {
-      f(service(key, t), t)
-    } finally {
-      t.toFile.deleteOnExit()
-    }
+    withTemp(t =>  f(service(key, t), t))
   }
 }

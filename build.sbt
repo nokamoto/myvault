@@ -13,6 +13,8 @@ PB.targets in Compile := Seq(
   scalapb.gen(grpc = false, flatPackage = true, javaConversions = false) -> (sourceManaged in Compile).value
 )
 
+assemblyOutputPath in assembly := file("target/myvault.jar")
+
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
   "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"

@@ -11,9 +11,13 @@ message MyVault {
 }
 
 message Password {
-  string name = 1;
+  string password_id = 1;
 
-  string password = 2;
+  string name = 2;
+
+  string username = 3;
+
+  string password = 4;
 }
 
 message PlainVault {

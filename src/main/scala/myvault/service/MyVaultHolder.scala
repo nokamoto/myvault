@@ -73,7 +73,13 @@ class MyVaultHolder(key: VaultKey, init: Option[Array[Byte]]) {
   }
 
   def add(password: Password): Unit = {
-    update(_.update(_.password :+= password))
+    update(_.update(_.password :+= password.update(_.passwordId := UUID.randomUUID().toString)))
+  }
+
+  def del(id: String): Unit = {
+    update { vault =>
+      vault.update(_.password := vault.password.filterNot(_.passwordId == id))
+    }
   }
 
   def vault: PlainVault = {

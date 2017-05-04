@@ -7,7 +7,7 @@ trait LocalFileSync {
 
   private[this] def filename = "myvault"
 
-  protected[this] def dir: String = sys.props.get(prop).getOrElse(Paths.get(".").normalize().toAbsolutePath.toString)
+  protected[this] def dir: String = Paths.get(sys.props.get(prop).getOrElse(".")).normalize().toAbsolutePath.toString
 
   private[this] def file = Paths.get(dir, filename).normalize()
 

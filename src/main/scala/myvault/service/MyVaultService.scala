@@ -23,6 +23,8 @@ abstract class MyVaultService(key: VaultKey) {
 
   def add(password: Password): Unit = holder.add(password)
 
+  def del(id: String): Unit = holder.del(id)
+
   def sync(): Unit = {
     sync(holder.toByteArray)
   }
